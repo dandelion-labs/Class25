@@ -1,0 +1,276 @@
+include <arc.scad>;
+//linear_extrude(length) arc(radius,[start_angle,end_angle],width,fn);
+
+//Original dimensions are for OO gauge (1:76)
+
+gauge1=2.375;  //Scale
+
+c_width=34/2; //Width of cab (/2)
+c_height=32.7;    //Height of roof
+c_cab=13.5; //mid height of cab (where cab goes from vertical to sloped)
+t_cab=27; //Top of cab (under roof)
+corner_rad=2; //radius of panel corners
+
+//showCab();
+
+module showCab()
+{
+    scale(gauge1)
+    {
+        difference()
+        {
+            cab();
+            color("red") cutouts();
+        }
+        difference()
+        {
+        mirror([0,1,0]) cab();
+        mirror([0,1,0]) color("red") cutouts();
+        }
+    }
+}
+
+
+
+
+
+//x,y,z
+
+module cab()
+{
+    //Top reference
+    //color("red") translate([0,0,c_height]) cube([100,100,1]);
+    
+    //lower front center panel
+    cube([1,5,c_cab]);
+    
+    //lower front side panel
+    translate([0,5,0])
+    rotate([0,0,-5])
+    cube([1,c_width-4.5-corner_rad,c_cab]);
+        //trim
+        translate([0.25,12,4])
+        rotate([0,0,-5])
+        rotate([0,90,0])
+        cylinder(0.75,d=2.5);
+    
+    //lower side panel
+    translate([corner_rad+1,c_width-1,0])
+    cube([13.5-corner_rad,1,c_cab]);
+
+    
+    //lower corner
+    $fn=50;
+    translate([corner_rad+1,c_width-corner_rad,0])
+    rotate([0,0,90])
+    linear_extrude(c_cab)
+    arc(corner_rad/2,[0,90],1,width_mode="LINE_OUTWARD");
+    
+    //upper front center panel
+    translate([0,0,c_cab])
+    rotate ([0,10,0]) cube([1,5,10.4]);
+        //trim
+        translate([-0.5,0,c_cab+0.25])
+        cube([1,5,0.5]);
+    
+    //upper front side panel
+    translate([0,5,c_cab])
+    rotate ([0,10,-5])
+    cube([1,c_width-4.5-corner_rad,10.4]);
+        //trim
+        translate([-0.5,5,c_cab+0.25])
+        rotate([0,0,-5])
+        cube([1,c_width-4.5-corner_rad,0.5]);
+        
+
+    //upper side panel
+    translate([corner_rad+1,c_width,c_cab])
+    rotate([90,0,0])
+    linear_extrude(1)
+    polygon([[0,0],[13.5-corner_rad,0],[13.5-corner_rad,10],[1.8,10]]);
+    
+    //upper corner
+    translate([corner_rad+1,c_width-corner_rad,c_cab-0.3])
+    rotate([10,0,90])
+    linear_extrude(t_cab-c_cab-3.1)
+    arc(corner_rad/2,[0,90],1,width_mode="LINE_OUTWARD");
+    
+    //upper cab center curve
+    translate([-3.1,0,t_cab-37]) 
+    rotate([0,-80,0]) 
+    linear_extrude(1)
+    arc(33.7,[0,7],3.7,width_mode="LINE_OUTWARD");
+    
+    //upper cab side curve
+    translate([-3.5,0,t_cab-37]) 
+    rotate([0,-80,-5]) 
+    linear_extrude(1)
+    arc(33.7,[7,24],3.7,width_mode="LINE_OUTWARD");    
+   
+    //upper cab roof curve
+    hull()
+    {
+        //Use series of hulled frames
+        //Inside->outside 
+        //Frame 1 
+        translate([5,7,c_height-7])
+        rotate([90,270,0])
+        linear_extrude(1)
+        arc(corner_rad,[0,90],1);
+
+        //Frame 2
+        translate([5.2,11,c_height-7.4])
+        rotate([-25,0,0])
+        rotate([90,270,0])
+        linear_extrude(0.1)
+        arc(corner_rad,[0,95],1);
+        translate([5.2,11.6,c_height-6])
+        rotate([-25,0,0])
+        cube([2,0.1,1]);
+    
+        //Frame 3 
+        translate([5.2,12.2,c_height-8.1])
+        rotate([-35,0,0])
+        rotate([90,270,0])
+        linear_extrude(0.1)
+        arc(corner_rad,[0,95],1);
+        translate([5.2,13,c_height-6.8])
+        rotate([-35,0,0])
+        cube([2,0.1,1]);
+
+        //Frame 4
+        translate([5.1,14,c_height-9.7])
+        rotate([-40,0,0])
+        rotate([90,270,0])
+        linear_extrude(0.1)
+        arc(corner_rad,[0,95],1);
+        translate([5,15,c_height-8.5])
+        rotate([-40,0,0])
+        cube([2.2,0.1,1]);     
+ 
+        //Frame 5
+        translate([5.2,14.6,c_height-9.2])
+        rotate([-90,0,0])
+        rotate([90,270,0])
+        linear_extrude(0.1)
+        arc(corner_rad,[0,95],1);
+        translate([5,16,c_height-9.1])
+        rotate([-90,0,0])
+        cube([2.2,0.1,1]);     
+     }
+     
+    //Roof curve
+    translate([14.5,0,-24+c_height])
+    rotate([0,270,0])
+    linear_extrude(7.3)
+    arc(22,[0,49],1); //width_mode="LINE_OUTWARD");
+    
+    //Route Box
+    translate([2,0,c_height-6.5])
+    hull() //Create rounded box
+    rotate([0,90,0])
+        {
+            translate ([-2,0,0]) cube([2,2,11]);  
+            translate([-1,6.8,0]) cylinder(11,d=2,$fn=10);
+            translate([-5.25,6.8,0]) cylinder(11,d=2,$fn=10);
+            translate([-6.25,0,0])  cube([2,2,11]);
+        }
+ 
+    translate([3.8,7.2,c_height-6.5]){
+        difference()  //Sloping sides
+        {
+            cube([9.2,7,5.8]);
+                translate([-0.1,-0.1,6.2])
+                rotate([-41,0,0])
+                cube([9.5,10,5]);
+                translate([-5.1,0,-0.1])
+                rotate([0,0,-30])
+                cube([5,12,7.1]);
+        }
+     }
+     translate([2.5,9,c_height-3.8]) //Upper Lights
+     rotate([0,90,0])
+     cylinder(4,d=2.5);
+}
+
+module cutouts()
+{
+    w_height=c_cab+3; //Window height above lower cab
+    
+    //Center Window
+    translate([0,-0.1,w_height])
+    hull()
+    rotate([0,10,0])
+    {
+        cube([2,1,1]);
+        translate([0,0,8.5]) cube([2,1,1]);
+        translate([0,4.2,1]) rotate([0,90,0]) cylinder(2,d=2,$fn=10);
+        translate([0,4.2,8.5]) rotate([0,90,0]) cylinder(2,d=2,$fn=10);
+    }
+    
+    //Front side window
+    translate([0,7,w_height+1])
+    hull()
+    rotate([0,10,-5])
+    {
+        rotate([0,90,0]) cylinder(2,d=2,$fn=10);
+        translate([0,7.4,0]) rotate([0,90,0]) cylinder(2,d=2,$fn=10);
+        translate([0,7.4,5]) rotate([0,90,0]) cylinder(2,d=2,$fn=10);
+        translate([0,0,7.5]) rotate([0,90,0]) cylinder(2,d=2,$fn=10);
+    }
+    
+    //Side windows
+    translate([4,c_width+0.5,c_cab+1])
+    hull()
+    {
+        rotate([90,0,0]) cylinder(2,d=2,$fn=10);
+        translate([9,0,0]) rotate([90,0,0]) cylinder(2,d=2,$fn=10);
+        translate([9,0,7]) rotate([90,0,0]) cylinder(2,d=2,$fn=10);
+        translate([1.4,0,7]) rotate([90,0,0]) cylinder(2,d=2,$fn=10);
+    }
+    
+    //Route Box
+    translate([0,0,c_height-6.2])
+    scale(0.9)
+    hull() //Create rounded box
+    rotate([0,90,0])
+        {
+            translate ([-2,0,0]) cube([2,2,13]);  
+            translate([-1,6.8,0]) cylinder(13,d=2,$fn=10);
+            translate([-5.25,6.8,0]) cylinder(13,d=2,$fn=10);
+            translate([-6.25,0,0])  cube([2,2,13]);
+        }
+    
+   //Upper lights (holes scaled for 3mm LEDs at gauge 1)
+     translate([2,9,c_height-3.8])
+     rotate([0,90,0])
+     cylinder(6,d=1.253,$fn=30);//led
+     translate([7,5,c_height-3])
+     rotate([-40,0,0])
+     cube([5,6,3]);
+   
+   //Lower lights (holes scaled for 3mm LEDs at gauge 1)
+     translate([0,12,4])
+     rotate([0,0,-5])
+     rotate([0,90,0])
+     {
+     cylinder(0.5,d=2,$fn=30);   //recess
+     cylinder(2,d=1.253,$fn=30);//led
+     } 
+     
+   //Interior tidy-up
+    hull()
+    {
+        $fn=50;
+        translate([14.5,0,c_height-24.6])
+        rotate([0,270,0])
+        linear_extrude(10)
+        arc(20,[0,47],4);
+    }
+    
+}
+
+
+
+
+
