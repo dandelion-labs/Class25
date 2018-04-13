@@ -3,7 +3,7 @@ include <arc.scad>;
 
 //Original dimensions are for OO gauge (1:76)
 
-gauge1=2.375;  //Scale
+c_scale=2.375;  //Scale
 
 c_width=34/2; //Width of cab (/2)
 c_height=32.7;    //Height of roof
@@ -15,7 +15,7 @@ corner_rad=2; //radius of panel corners
 
 module showCab()
 {
-    scale(gauge1)
+    scale(c_scale)
     {
         difference()
         {
@@ -191,6 +191,10 @@ module cab()
      translate([2.5,9,c_height-3.8]) //Upper Lights
      rotate([0,90,0])
      cylinder(4,d=2.5);
+     
+     //Frame mounts
+     translate([3.5,c_width-2,12.5/c_scale]) cube([11,1,1]);
+     translate([2.5,c_width-2,0]) cube([1,1,12.5/c_scale +1]);
 }
 
 module cutouts()
